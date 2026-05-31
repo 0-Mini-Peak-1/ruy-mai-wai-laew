@@ -1,0 +1,25 @@
+{
+  "name": "ไทยช่วยไทย คำนวณ",
+  "short_name": "ไทยช่วยไทย",
+  "description": "คำนวณค่าใช้จ่ายโครงการไทยช่วยไทย สัดส่วน 60:40",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f7f6f2",
+  "theme_color": "#e63329",
+  "lang": "th",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

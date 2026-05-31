@@ -1,0 +1,245 @@
+@import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg: #f7f6f2;
+  --surface: #ffffff;
+  --surface2: #f0ede6;
+  --border: #e2ddd6;
+  --text: #1a1814;
+  --text-muted: #8a8580;
+  --accent: #e63329;        /* Thai flag red */
+  --accent-soft: #fde8e7;
+  --gov: #1a4fa0;           /* Thai flag blue */
+  --gov-soft: #e8eef8;
+  --gold: #c9960c;
+  --gold-soft: #fdf4dc;
+  --green: #1a7a4a;
+  --green-soft: #e6f4ee;
+  --warn: #d97706;
+  --warn-soft: #fef3c7;
+  --radius: 16px;
+  --radius-sm: 10px;
+  --header-bg: rgba(247,246,242,0.90);
+  --nav-bg: rgba(255,255,255,0.92);
+}
+
+/* ─── Dark mode ──────────────────────────────────────────────── */
+html.dark {
+  --bg: #0f0e0d;
+  --surface: #1c1a18;
+  --surface2: #252320;
+  --border: #2e2b28;
+  --text: #f0ede8;
+  --text-muted: #6b6760;
+  --accent: #f04438;
+  --accent-soft: #2d1614;
+  --gov: #4a80d4;
+  --gov-soft: #0f1e38;
+  --gold: #e8b84b;
+  --gold-soft: #2a2108;
+  --green: #34c77a;
+  --green-soft: #0d2a1a;
+  --warn: #fbbf24;
+  --warn-soft: #2a1f08;
+  --header-bg: rgba(15,14,13,0.90);
+  --nav-bg: rgba(28,26,24,0.95);
+}
+
+/* Smooth theme transition */
+html {
+  color-scheme: light;
+  transition: background-color 0.25s ease, color 0.25s ease;
+}
+html.dark {
+  color-scheme: dark;
+}
+
+* {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Sarabun', sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  overscroll-behavior: none;
+}
+
+/* Mobile viewport fix */
+body {
+  min-height: 100dvh;
+}
+
+/* ─── Scrollbar ─────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+/* ─── Animations ─────────────────────────────────────────────── */
+@keyframes slideUp {
+  from { transform: translateY(16px); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+@keyframes pop {
+  0%   { transform: scale(0.92); opacity: 0; }
+  60%  { transform: scale(1.03); }
+  100% { transform: scale(1);    opacity: 1; }
+}
+@keyframes shimmer {
+  0%   { background-position: -200% center; }
+  100% { background-position:  200% center; }
+}
+@keyframes pulse-ring {
+  0%   { box-shadow: 0 0 0 0 rgba(230, 51, 41, 0.35); }
+  70%  { box-shadow: 0 0 0 10px rgba(230, 51, 41, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(230, 51, 41, 0); }
+}
+
+.animate-slide-up { animation: slideUp 0.35s cubic-bezier(0.16, 1, 0.3, 1) both; }
+.animate-pop      { animation: pop 0.4s cubic-bezier(0.16, 1, 0.3, 1) both; }
+.animate-pulse-ring { animation: pulse-ring 1.5s ease-out infinite; }
+
+/* Stagger children */
+.stagger > *:nth-child(1) { animation-delay: 0ms; }
+.stagger > *:nth-child(2) { animation-delay: 60ms; }
+.stagger > *:nth-child(3) { animation-delay: 120ms; }
+.stagger > *:nth-child(4) { animation-delay: 180ms; }
+.stagger > *:nth-child(5) { animation-delay: 240ms; }
+
+/* ─── Utility classes ─────────────────────────────────────────── */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.btn-primary {
+  background: var(--accent);
+  color: white;
+  font-family: 'Sarabun', sans-serif;
+  font-weight: 700;
+  font-size: 1.05rem;
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 14px 24px;
+  cursor: pointer;
+  transition: transform 0.12s, box-shadow 0.12s, background 0.12s;
+  box-shadow: 0 4px 16px rgba(230, 51, 41, 0.25);
+  width: 100%;
+}
+.btn-primary:hover  { background: #c8241a; transform: translateY(-1px); box-shadow: 0 6px 20px rgba(230,51,41,0.32); }
+.btn-primary:active { transform: scale(0.97); }
+
+.btn-ghost {
+  background: transparent;
+  color: var(--text-muted);
+  font-family: 'Sarabun', sans-serif;
+  font-weight: 500;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 12px 20px;
+  cursor: pointer;
+  transition: all 0.15s;
+  width: 100%;
+}
+.btn-ghost:hover { border-color: var(--text-muted); color: var(--text); background: var(--surface2); }
+
+/* ─── Input ────────────────────────────────────────────────────── */
+.input-field {
+  width: 100%;
+  background: var(--surface2);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 14px 16px;
+  font-family: 'Sarabun', sans-serif;
+  font-size: 1rem;
+  color: var(--text);
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.input-field:focus {
+  border-color: var(--gov);
+  box-shadow: 0 0 0 3px rgba(26, 79, 160, 0.12);
+  background: var(--surface);
+}
+.input-field::placeholder { color: var(--text-muted); }
+
+/* ─── Progress bar ─────────────────────────────────────────────── */
+.progress-track {
+  background: var(--surface2);
+  border-radius: 999px;
+  overflow: hidden;
+  height: 8px;
+}
+.progress-fill {
+  height: 100%;
+  border-radius: 999px;
+  transition: width 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ─── Bottom nav ───────────────────────────────────────────────── */
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 430px;
+  background: var(--nav-bg);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-top: 1px solid var(--border);
+  display: flex;
+  padding: 8px 0 max(8px, env(safe-area-inset-bottom));
+  z-index: 100;
+}
+.nav-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 6px 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: 'Sarabun', sans-serif;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  transition: color 0.15s;
+  letter-spacing: 0.02em;
+}
+.nav-item.active { color: var(--accent); }
+.nav-item svg { transition: transform 0.2s; }
+.nav-item.active svg { transform: scale(1.15); }
+
+/* Number display */
+.price-display {
+  font-size: 2.8rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1;
+}
+
+/* Badge */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
