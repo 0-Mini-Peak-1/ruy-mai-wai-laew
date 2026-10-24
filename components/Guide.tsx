@@ -9,9 +9,9 @@ export default function Guide() {
       <div
         className="card animate-slide-up p-6 text-center"
         style={{
-          background: "linear-gradient(135deg, var(--gov) 0%, #1a3f80 100%)",
+          background: "linear-gradient(135deg, #1a4fa0 0%, #12346b 100%)",
           border: "none",
-          color: "white",
+          color: "#ffffff",
         }}
       >
         <div style={{ fontSize: "2.5rem" }}>🇹🇭</div>
@@ -21,7 +21,7 @@ export default function Guide() {
 
       {/* Ratio explainer */}
       <div className="card animate-slide-up p-5 space-y-3">
-        <div className="text-sm font-700" style={{ color: "var(--text-muted)", letterSpacing: "0.06em", textTransform: "uppercase" }}>
+        <div className="text-sm font-700" style={{ color: "var(--text-muted)", letterSpacing: "0.01em" }}>
           สัดส่วนการจ่าย
         </div>
         <div className="flex gap-3">
@@ -42,7 +42,7 @@ export default function Guide() {
 
       {/* Limits */}
       <div className="card animate-slide-up p-5 space-y-3">
-        <div className="text-sm font-700" style={{ color: "var(--text-muted)", letterSpacing: "0.06em", textTransform: "uppercase" }}>
+        <div className="text-sm font-700" style={{ color: "var(--text-muted)", letterSpacing: "0.01em" }}>
           วงเงินที่รัฐออกให้
         </div>
         <div className="space-y-2">
@@ -71,7 +71,7 @@ export default function Guide() {
 
       {/* Example */}
       <div className="card animate-slide-up p-5 space-y-3">
-        <div className="text-sm font-700" style={{ color: "var(--text-muted)", letterSpacing: "0.06em", textTransform: "uppercase" }}>
+        <div className="text-sm font-700" style={{ color: "var(--text-muted)", letterSpacing: "0.01em" }}>
           ตัวอย่างการคำนวณ
         </div>
         <div className="space-y-2 text-sm">
@@ -110,7 +110,7 @@ export default function Guide() {
 
       {/* How to use */}
       <div className="card animate-slide-up p-5 space-y-3">
-        <div className="text-sm font-700" style={{ color: "var(--text-muted)", letterSpacing: "0.06em", textTransform: "uppercase" }}>
+        <div className="text-sm font-700" style={{ color: "var(--text-muted)", letterSpacing: "0.01em" }}>
           วิธีใช้แอปนี้
         </div>
         <div className="space-y-3">

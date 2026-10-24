@@ -2,16 +2,24 @@
 
 A mobile-first Next.js app for calculating and tracking personal spending under Thailand's **ไทยช่วยไทย** government subsidy programme, which splits purchases 60% (government) / 40% (individual) via the เป๋าตังค์ e-wallet.
 
+**Live:** https://ruy-mai-wai-laew.vercel.app/
+
 ---
 
 ## Features
 
-- **Split calculator** — Enter any price and instantly see how much the government pays vs. how much you pay, accounting for remaining daily and monthly caps
+- **Live split calculator** — Type a price and instantly see how much the government pays vs. how much you pay, accounting for remaining daily and monthly caps (no "calculate" button needed)
+- **Visual 60/40 split bar** — A single animated bar makes the ratio understandable at a glance
 - **Limit tracking** — Visual progress bars for your ฿200/day and ฿1,000/month government allowance with real-time remaining balance shown in the header
-- **Exceeded alerts** — Clear banners when you've hit your daily or monthly cap, and an explanation when the government pays less than 60% due to a cap
-- **Purchase history** — All records persisted in `localStorage`, grouped by date, with per-day summaries and individual delete
-- **Theme toggle** — Light / Dark / System (follows OS preference) with smooth transition, preference saved across sessions
+- **Smart cap hint** — Tells you the maximum price that still gets the full 60% given your remaining allowance
+`- **Purchase history** — All records persisted in `localStorage`, grouped by date, with per-day summaries, delete + undo, and a 7-day spend chart
+`- **Share cards** — Generate a 1080×1080 PNG for any purchase or a monthly summary, then share it to LINE or download it (Web Share API with download fallback)
+- **Streaks & lifetime totals** — See how many consecutive days you've used the programme and how much the government has contributed overall
+- **Theme toggle** — Light / Dark / System (follows OS preference) with a flash-free first paint
 - **Guide tab** — In-app explainer covering the programme rules, payment ratio, limits, and examples
+- **Installable PWA** — Add to home screen, offline support via a service worker, and app shortcuts
+- **Desktop dashboard** — Calculator and history sit side by side on wide screens; mobile keeps the bottom-tab layout
+- **Shareable link previews** — Dynamic OpenGraph/Twitter images with Thai typography
 
 ---
 
@@ -22,9 +30,11 @@ A mobile-first Next.js app for calculating and tracking personal spending under 
 | Framework | Next.js 14 (App Router) |
 | Language | TypeScript |
 | Styling | Tailwind CSS + CSS custom properties |
-| Font | Sarabun (Google Fonts) — Thai/Latin |
+| Font | Sarabun via `next/font` (self-hosted, Thai/Latin) |
 | State | React `useState` / `useCallback` |
 | Persistence | Browser `localStorage` |
+| Sharing | Canvas 2D + Web Share API |
+| Offline | Hand-rolled service worker + web manifest |
 | Icons | Inline SVG |
 
 No external UI library, no database, no auth — intentionally lightweight and self-contained.
@@ -36,20 +46,36 @@ No external UI library, no database, no auth — intentionally lightweight and s
 ```
 thai-chuay-thai/
 ├── app/
-│   ├── globals.css          # CSS variables (light + dark), utility classes, animations
-│   ├── globals.d.ts         # TypeScript declaration for CSS imports
-│   ├── layout.tsx           # Root layout — metadata, viewport, font
-│   └── page.tsx             # Main shell — tab state, purchase state, header, bottom nav
+│   ├── globals.css               # CSS variables (light + dark), utilities, desktop layout
+│   ├── globals.d.ts              # TypeScript declaration for CSS imports
+│   ├── layout.tsx                # Root layout — metadata, viewport, theme script, font
+│   ├── page.tsx                  # App shell — tabs, state, responsive dashboard
+│   ├── opengraph-image.tsx       # 1200×630 social preview (next/og)
+│   ├── twitter-image.tsx         # Twitter card (reuses the OG image)
+│   ├── robots.ts                 # robots.txt
+│   ├── sitemap.ts                # sitemap.xml
+│   └── fonts/Sarabun-Bold.ttf    # Font used to render the OG image
 │
 ├── components/
-│   ├── Calculator.tsx       # Tab 1: price input, split result, save flow
-│   ├── History.tsx          # Tab 2: purchase log grouped by date
-│   ├── Guide.tsx            # Tab 3: programme explainer
-│   └── ThemeToggle.tsx      # Light / Dark / System segmented control
+│   ├── Calculator.tsx            # Live price input, split result, save flow
+│   ├── History.tsx               # Purchase log, 7-day chart, undo, share buttons
+│   ├── Guide.tsx                 # Programme explainer
+│   ├── SplitBar.tsx              # Animated 60/40 bar
+│   ├── ShareCard.tsx             # Share-card modal (preview / share / download)
+│   ├── ThemeToggle.tsx           # Light / Dark / System segmented control
+│   └── ServiceWorkerRegister.tsx # Registers the offline worker in production
 │
 ├── lib/
-│   ├── store.ts             # Types, constants (limits/ratio), calc logic, localStorage helpers
-│   └── useTheme.ts          # Theme hook — reads/writes preference, applies .dark class
+│   ├── store.ts                  # Types, limits, local-date helpers, calc + storage
+│   ├── format.ts                 # Thai currency/date/time formatting
+│   ├── shareCard.ts              # Canvas renderer + Web Share/download helpers
+│   ├── useTheme.ts               # Theme hook — reads/writes preference
+│   └── useCountUp.ts             # Animated number hook (reduced-motion aware)
+│
+├── public/
+│   ├── manifest.json             # PWA manifest + shortcuts
+│   ├── sw.js                     # Offline cache (production only)
+│   └── icon-*.png                # App icons
 │
 ├── next.config.js
 ├── tailwind.config.ts
@@ -132,6 +158,31 @@ The theme toggle (top-right of the header) cycles between three modes:
 | 💻 ระบบ | Follows OS `prefers-color-scheme` (default) |
 
 Preference is saved to `localStorage` under the key `thai-chuay-thai-theme` and applied immediately on page load with no flash.
+
+---
+
+## Share Cards
+
+Every purchase row and the monthly summary have a share button. The card is rendered locally on a `<canvas>` (no image service), so it works offline and includes Thai typography. On mobile, `navigator.share()` opens the native share sheet with the PNG attached; on desktop it falls back to a download.
+
+---
+
+## PWA & Offline
+
+- `public/manifest.json` declares standalone display, icons, and app shortcuts (`/?tab=calc`, `/?tab=history`)
+- `public/sw.js` caches the app shell and hashed Next.js bundles on install, then uses network-first for navigations and stale-while-revalidate for static assets
+- The worker is registered only in production builds (`components/ServiceWorkerRegister.tsx`)
+- After the first visit, the app reloads and works without a network connection
+
+To invalidate the cache after a deploy, bump `CACHE` in `public/sw.js` (e.g. `thai-chuay-thai-v2`).
+
+---
+
+## Deploy
+
+The app is deployed on Vercel at https://ruy-mai-wai-laew.vercel.app/.
+
+`metadataBase` is set in `app/layout.tsx`; update it if you deploy to a different domain. The OpenGraph image is generated at build time with `next/og` and a bundled Sarabun font.
 
 ---
 

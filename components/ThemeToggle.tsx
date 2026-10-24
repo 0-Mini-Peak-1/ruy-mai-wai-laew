@@ -16,6 +16,7 @@ const options: { value: ThemeMode; label: string; icon: string }[] = [
 export default function ThemeToggle({ mode, onChange }: Props) {
   return (
     <div
+      className="theme-toggle"
       style={{
         display: "flex",
         background: "var(--surface2)",
@@ -30,17 +31,17 @@ export default function ThemeToggle({ mode, onChange }: Props) {
         return (
           <button
             key={opt.value}
+            className="theme-toggle-btn"
             onClick={() => onChange(opt.value)}
             title={opt.label}
             style={{
               display: "flex",
               alignItems: "center",
               gap: "4px",
-              padding: "5px 9px",
               borderRadius: "8px",
               border: "none",
               cursor: "pointer",
-              fontFamily: "'Sarabun', sans-serif",
+              fontFamily: "inherit",
               fontSize: "0.7rem",
               fontWeight: active ? 700 : 500,
               background: active ? "var(--surface)" : "transparent",
@@ -52,7 +53,7 @@ export default function ThemeToggle({ mode, onChange }: Props) {
             aria-pressed={active}
           >
             <span style={{ fontSize: "0.85rem", lineHeight: 1 }}>{opt.icon}</span>
-            <span>{opt.label}</span>
+            <span className="theme-toggle-label">{opt.label}</span>
           </button>
         );
       })}

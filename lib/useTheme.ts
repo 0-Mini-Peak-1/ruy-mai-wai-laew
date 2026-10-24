@@ -11,9 +11,14 @@ function getSystemDark(): boolean {
   return window.matchMedia("(prefers-color-scheme: dark)").matches;
 }
 
+function isThemeMode(value: unknown): value is ThemeMode {
+  return value === "light" || value === "dark" || value === "system";
+}
+
 function applyTheme(mode: ThemeMode) {
   const isDark = mode === "dark" || (mode === "system" && getSystemDark());
   document.documentElement.classList.toggle("dark", isDark);
+  document.documentElement.style.colorScheme = isDark ? "dark" : "light";
 }
 
 export function useTheme() {
@@ -22,7 +27,13 @@ export function useTheme() {
 
   // On mount: read saved preference and apply
   useEffect(() => {
-    const saved = (localStorage.getItem(STORAGE_KEY) as ThemeMode) || "system";
+    let savedRaw: string | null = null;
+    try {
+      savedRaw = localStorage.getItem(STORAGE_KEY);
+    } catch {
+      savedRaw = null;
+    }
+    const saved: ThemeMode = isThemeMode(savedRaw) ? savedRaw : "system";
     setMode(saved);
     applyTheme(saved);
     setMounted(true);
@@ -30,7 +41,13 @@ export function useTheme() {
     // Listen for system preference changes (relevant when mode === "system")
     const mq = window.matchMedia("(prefers-color-scheme: dark)");
     const handler = () => {
-      const current = (localStorage.getItem(STORAGE_KEY) as ThemeMode) || "system";
+      let currentRaw: string | null = null;
+      try {
+        currentRaw = localStorage.getItem(STORAGE_KEY);
+      } catch {
+        currentRaw = null;
+      }
+      const current: ThemeMode = isThemeMode(currentRaw) ? currentRaw : "system";
       if (current === "system") applyTheme("system");
     };
     mq.addEventListener("change", handler);
@@ -39,7 +56,11 @@ export function useTheme() {
 
   const setTheme = useCallback((next: ThemeMode) => {
     setMode(next);
-    localStorage.setItem(STORAGE_KEY, next);
+    try {
+      localStorage.setItem(STORAGE_KEY, next);
+    } catch {
+      // Private mode / storage disabled — apply for this session only.
+    }
     applyTheme(next);
   }, []);
 

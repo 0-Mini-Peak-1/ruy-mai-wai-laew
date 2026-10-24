@@ -3,6 +3,8 @@
 import { useState, useEffect, useCallback } from "react";
 import {
   Purchase,
+  DAILY_LIMIT,
+  MONTHLY_LIMIT,
   loadPurchases,
   savePurchases,
   computeDayUsed,
@@ -10,6 +12,7 @@ import {
   todayKey,
   monthKey,
 } from "@/lib/store";
+import { baht0 } from "@/lib/format";
 import Calculator from "@/components/Calculator";
 import History from "@/components/History";
 import Guide from "@/components/Guide";
@@ -50,6 +53,48 @@ function GuideIcon({ active }: { active: boolean }) {
   );
 }
 
+// ─── Loading skeleton ─────────────────────────────────────────────────────────
+
+function LoadingShell() {
+  return (
+    <div className="app-bg">
+      <div className="app-shell">
+        <header className="app-header">
+          <div className="header-inner">
+            <div>
+              <div className="skeleton" style={{ width: 130, height: 20 }} />
+              <div className="skeleton mt-2" style={{ width: 100, height: 12 }} />
+            </div>
+            <div className="skeleton" style={{ width: 120, height: 30 }} />
+          </div>
+        </header>
+        <main className="app-main">
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-3">
+              <div className="card p-4 space-y-2">
+                <div className="skeleton" style={{ width: 50, height: 12 }} />
+                <div className="skeleton" style={{ width: 90, height: 22 }} />
+                <div className="skeleton" style={{ width: "100%", height: 8 }} />
+              </div>
+              <div className="card p-4 space-y-2">
+                <div className="skeleton" style={{ width: 50, height: 12 }} />
+                <div className="skeleton" style={{ width: 90, height: 22 }} />
+                <div className="skeleton" style={{ width: "100%", height: 8 }} />
+              </div>
+            </div>
+            <div className="card p-5 space-y-3">
+              <div className="skeleton" style={{ width: 90, height: 12 }} />
+              <div className="skeleton" style={{ width: "100%", height: 48 }} />
+              <div className="skeleton" style={{ width: "100%", height: 48 }} />
+              <div className="skeleton" style={{ width: "100%", height: 48 }} />
+            </div>
+          </div>
+        </main>
+      </div>
+    </div>
+  );
+}
+
 // ─── Main page ────────────────────────────────────────────────────────────────
 
 export default function Home() {
@@ -61,10 +106,17 @@ export default function Home() {
   useEffect(() => {
     setPurchases(loadPurchases());
     setMounted(true);
+
+    const requested = new URLSearchParams(window.location.search).get("tab");
+    if (requested === "calc" || requested === "history" || requested === "guide") {
+      setTab(requested);
+    }
   }, []);
 
   const dayUsed = computeDayUsed(purchases, todayKey());
   const monthUsed = computeMonthUsed(purchases, monthKey());
+  const dayRemaining = Math.max(0, DAILY_LIMIT - dayUsed);
+  const monthRemaining = Math.max(0, MONTHLY_LIMIT - monthUsed);
 
   const addPurchase = useCallback(
     (p: Omit<Purchase, "id" | "timestamp">) => {
@@ -73,35 +125,34 @@ export default function Home() {
         id: `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
         timestamp: Date.now(),
       };
-      const updated = [newP, ...purchases];
-      setPurchases(updated);
-      savePurchases(updated);
+      setPurchases((prev) => {
+        const updated = [newP, ...prev];
+        savePurchases(updated);
+        return updated;
+      });
     },
-    [purchases]
+    []
   );
 
-  const deletePurchase = useCallback(
-    (id: string) => {
-      const updated = purchases.filter((p) => p.id !== id);
-      setPurchases(updated);
+  const deletePurchase = useCallback((id: string) => {
+    setPurchases((prev) => {
+      const updated = prev.filter((p) => p.id !== id);
       savePurchases(updated);
-    },
-    [purchases]
-  );
+      return updated;
+    });
+  }, []);
+
+  const restorePurchase = useCallback((p: Purchase) => {
+    setPurchases((prev) => {
+      if (prev.some((item) => item.id === p.id)) return prev;
+      const updated = [...prev, p].sort((a, b) => b.timestamp - a.timestamp);
+      savePurchases(updated);
+      return updated;
+    });
+  }, []);
 
   if (!mounted || !themeMounted) {
-    return (
-      <div
-        style={{
-          minHeight: "100dvh",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-        }}
-      >
-        <div style={{ color: "var(--text-muted)", fontSize: "0.9rem" }}>กำลังโหลด...</div>
-      </div>
-    );
+    return <LoadingShell />;
   }
 
   const tabs: { id: Tab; label: string; Icon: React.FC<{ active: boolean }> }[] = [
@@ -111,113 +162,102 @@ export default function Home() {
   ];
 
   return (
-    <div
-      style={{
-        minHeight: "100dvh",
-        background: "var(--bg)",
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-      }}
-    >
-      {/* App wrapper — mobile width */}
-      <div
-        style={{
-          width: "100%",
-          maxWidth: "430px",
-          minHeight: "100dvh",
-          display: "flex",
-          flexDirection: "column",
-          position: "relative",
-        }}
-      >
+    <div className="app-bg">
+      <div className="app-shell">
         {/* ─── Header ─── */}
-        <header
-          style={{
-            position: "sticky",
-            top: 0,
-            zIndex: 50,
-            background: "var(--header-bg)",
-            backdropFilter: "blur(20px)",
-            WebkitBackdropFilter: "blur(20px)",
-            borderBottom: "1px solid var(--border)",
-            padding: "14px 20px 12px",
-          }}
-        >
-          <div className="flex items-center justify-between">
-            <div>
-              <div
-                style={{
-                  fontWeight: 800,
-                  fontSize: "1.15rem",
-                  letterSpacing: "-0.01em",
-                  lineHeight: 1.2,
-                }}
-              >
-                🇹🇭 ไทยช่วยไทย
-              </div>
-              <div style={{ fontSize: "0.72rem", color: "var(--text-muted)", marginTop: "1px" }}>
-                คำนวณค่าใช้จ่าย 60:40
-              </div>
+        <header className="app-header">
+          <div className="header-inner">
+            <div className="brand-block">
+              <div className="brand-title">🇹🇭 ไทยช่วยไทย</div>
+              <div className="brand-sub">คำนวณค่าใช้จ่าย 60:40</div>
             </div>
 
+            {/* Desktop navigation */}
+            <nav className="desktop-nav" aria-label="เมนูหลัก">
+              <button
+                type="button"
+                className={tab !== "guide" ? "active" : ""}
+                onClick={() => setTab("calc")}
+                aria-current={tab !== "guide" ? "page" : undefined}
+              >
+                หน้าหลัก
+              </button>
+              <button
+                type="button"
+                className={tab === "guide" ? "active" : ""}
+                onClick={() => setTab("guide")}
+                aria-current={tab === "guide" ? "page" : undefined}
+              >
+                วิธีใช้
+              </button>
+            </nav>
+
             {/* Right side: budget chips + theme toggle */}
-            <div className="flex flex-col items-end gap-2">
-              {/* Budget chips */}
+            <div className="header-right">
               <div className="flex gap-2">
                 <div
-                  className="badge"
+                  className="badge nums"
                   style={{
-                    background: dayUsed >= 200 ? "var(--accent-soft)" : "var(--gov-soft)",
-                    color: dayUsed >= 200 ? "var(--accent)" : "var(--gov)",
+                    background:
+                      dayRemaining <= 0 ? "var(--accent-soft)" : "var(--gov-soft)",
+                    color: dayRemaining <= 0 ? "var(--accent)" : "var(--gov)",
                   }}
+                  title="วงเงินรัฐบาลคงเหลือวันนี้"
                 >
-                  วัน ฿{(200 - dayUsed).toFixed(0)}
+                  วัน {baht0(dayRemaining)}
                 </div>
                 <div
-                  className="badge"
+                  className="badge nums"
                   style={{
-                    background: monthUsed >= 1000 ? "var(--accent-soft)" : "var(--gold-soft)",
-                    color: monthUsed >= 1000 ? "var(--accent)" : "var(--gold)",
+                    background:
+                      monthRemaining <= 0 ? "var(--accent-soft)" : "var(--gold-soft)",
+                    color: monthRemaining <= 0 ? "var(--accent)" : "var(--gold)",
                   }}
+                  title="วงเงินรัฐบาลคงเหลือเดือนนี้"
                 >
-                  เดือน ฿{(1000 - monthUsed).toFixed(0)}
+                  เดือน {baht0(monthRemaining)}
                 </div>
               </div>
-              {/* Theme toggle */}
               <ThemeToggle mode={themeMode} onChange={setTheme} />
             </div>
           </div>
         </header>
 
         {/* ─── Content ─── */}
-        <main
-          style={{
-            flex: 1,
-            padding: "16px 16px 90px",
-            overflowY: "auto",
-          }}
-        >
-          {tab === "calc" && (
-            <Calculator
-              dayUsed={dayUsed}
-              monthUsed={monthUsed}
-              onAdd={addPurchase}
-            />
+        <main className="app-main">
+          {tab === "guide" ? (
+            <div className="lg:mx-auto lg:max-w-3xl">
+              <Guide />
+            </div>
+          ) : (
+            <div className="desktop-grid">
+              <div className={tab === "calc" ? "block" : "hidden lg:block"}>
+                <Calculator
+                  dayUsed={dayUsed}
+                  monthUsed={monthUsed}
+                  onAdd={addPurchase}
+                />
+              </div>
+              <div className={tab === "history" ? "block" : "hidden lg:block"}>
+                <History
+                  purchases={purchases}
+                  onDelete={deletePurchase}
+                  onRestore={restorePurchase}
+                  onGoToCalc={() => setTab("calc")}
+                />
+              </div>
+            </div>
           )}
-          {tab === "history" && (
-            <History purchases={purchases} onDelete={deletePurchase} />
-          )}
-          {tab === "guide" && <Guide />}
         </main>
 
-        {/* ─── Bottom nav ─── */}
-        <nav className="bottom-nav">
+        {/* ─── Bottom nav (mobile) ─── */}
+        <nav className="bottom-nav" aria-label="เมนูหลัก">
           {tabs.map(({ id, label, Icon }) => (
             <button
               key={id}
               className={`nav-item ${tab === id ? "active" : ""}`}
               onClick={() => setTab(id)}
+              aria-current={tab === id ? "page" : undefined}
             >
               <Icon active={tab === id} />
               <span>{label}</span>
